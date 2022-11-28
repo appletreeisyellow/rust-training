@@ -97,3 +97,43 @@ match expression {
 ```
 
 rust enforces all the cases are matched
+
+## Structs
+
+```rust
+struct TypeName {
+    member_name: MemberType,
+}
+
+let val = TypeName {
+    member_name: member_value,
+};
+val.member_name;
+```
+
+## Tuple structs
+
+```rust
+struct TypeName(MemberType, AnotherType);
+
+let val = TypeName(member_value, another_value);
+val.0;
+```
+
+Don't use tuple if:
+
+- there are a lot of members, limit to 2 or 3 members max
+- there is not an order needed
+
+## Reading user input
+
+```rust
+use std::io;
+
+fn main() {
+    let mut input = String::new();
+    io::stdin().read_line(&mut input)
+        .expect("Couldn't read from stdin");
+    println!("Read: {input:?}");
+}
+```

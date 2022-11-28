@@ -80,10 +80,12 @@ if condition { // no () on condition
 
 ```rust
 match expression {
-    pattern_1 => /* expression */,
+    pattern_1 => expression,
     pattern_2 => {
-        // statements + optional expression
+        statement;
+        statement;
+        expression
     }
-    _ => /* expression */,
+    _ => expression,
 }
 ```

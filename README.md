@@ -68,11 +68,17 @@ fn the_name(arg1: Type1, arg2: Type2, ...) -> ReturnType {
 
 ```rust
 if condition { // no () on condition
-    // statements + optional expression
+    statement;
+    statement;
+    expression
 } else if another_condition {
-    // statements + optional expression
+    statement;
+    statement;
+    expression
 } else {
-    // statements + optional expression
+    statement;
+    statement;
+    expression
 }
 ```
 
@@ -89,3 +95,5 @@ match expression {
     _ => expression,
 }
 ```
+
+rust enforces all the cases are matched

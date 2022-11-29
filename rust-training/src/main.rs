@@ -123,6 +123,17 @@ fn add(n1: i32, n2: i32) -> Result<i32, ()> {
     valid(n1 + n2, 15)
 }
 
+fn two_strings(s1: &str, s2: &str) -> Result<i32, Box<dyn std::error::Error + 'static>> {
+    let a = s1.parse::<bool>()?;
+    let b = s2.parse::<i32>()?;
+
+    if a {
+        Ok(b * 2)
+    } else {
+        Ok(b * 3)
+    }
+}
+
 fn main() {
     print_values();
 
@@ -155,5 +166,17 @@ fn main() {
         println!("adding {} and {} -> {:?}", 10, 2, add(10, 2));
         println!("adding {} and {} -> {:?}", 11, 2, add(11, 2));
         println!("adding {} and {} -> {:?}", 10, 6, add(10, 6));
+    }
+
+    {
+        println!("{:?}", two_strings("true", "2"));
+        println!("{:?}", two_strings("false", "2"));
+        println!("{:?}", two_strings("random", "2"));
+        println!("{:?}", two_strings("true", "random")); // This is for debuging print
+
+        if let Err(e) = two_strings("true", "random") {
+            // This is what to show to the user
+            println!("{e}");
+        }
     }
 }

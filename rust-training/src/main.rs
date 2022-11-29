@@ -134,6 +134,23 @@ fn two_strings(s1: &str, s2: &str) -> Result<i32, Box<dyn std::error::Error + 's
     }
 }
 
+struct PowersOfTwo(u32);
+
+impl PowersOfTwo {
+    fn new() -> PowersOfTwo {
+        PowersOfTwo(0)
+    }
+}
+
+impl Iterator for PowersOfTwo {
+    type Item = u32;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0 += 1;
+        Some(u32::pow(2, self.0 - 1))
+    }
+}
+
 fn main() {
     print_values();
 
@@ -178,5 +195,12 @@ fn main() {
             // This is what to show to the user
             println!("{e}");
         }
+    }
+
+    {
+        assert_eq!(
+            PowersOfTwo::new().take(10).collect::<Vec<_>>(),
+            vec![1, 2, 4, 8, 16, 32, 64, 128, 256, 512]
+        );
     }
 }

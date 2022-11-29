@@ -268,3 +268,241 @@ while let Some(v) = i.next() {
   // ...
 }
 ```
+
+## Closures in Rust
+
+```rust
+fn do_thing_3_times<F>(thing: F)
+where
+    F: Fn(),
+{
+    thing();
+    thing();
+    thing();
+}
+
+fn main() {
+    do_thing_3_times(|| println!("Hello!"));
+}
+```
+
+## Iterator::map
+
+```rust
+trait Iterator {
+    fn map<B, F>(self, f: F) -> Map<Self, F>
+    where
+        F: FnMut(Self::Item) -> B,
+}
+```
+
+Closure given an item, returns a new item.
+
+### Example
+
+```rust
+for i in (o..10).map(|v| v * 2) {
+  println!("{i}");
+}
+```
+
+## Iterator::filter
+
+```rust
+trait Iterator {
+    fn filter<P>(self, predicate: P) -> Filter<Self, P>
+    where
+        P: FnMut(&Self::Item) -> bool,
+}
+```
+
+Closure given a reference to an item, returns false if this item should be discarded.
+
+### Example
+
+```rust
+for i in (0..10).filter(|v| *v < 5>) {
+  println!("{i}");
+}
+
+for i in (0..10).filter(|v| v < &5>) {
+  println!("{i}");
+}
+
+for i in (0..10).filter(|&v| v < 5>) {
+  println!("{i}");
+}
+```
+
+## Iterator::collect
+
+```rust
+trait Iterator {
+    fn collect<B>(self) -> B
+    where
+        B: FromIterator<Self::Item>,
+}
+```
+
+Builds a collection of values from the iterator.
+
+### Example
+
+```rust
+let nums: Vec<_> = (0..10).collect();
+let nums: HashSet<_> = (0..10).collect();
+let nums: LinkedList<_> = (0..10).collect();
+```
+
+## Iterators vs Indexing
+
+### Avoid
+
+```rust
+let scores = vec![1, 2, 3];
+for i in 0..scores.len() {
+    let v = scores[i];
+    println!("{v}");
+}
+```
+
+### Prefer
+
+```rust
+let scores = vec![1, 2, 3];
+for v in &scores {
+    println!("{v}");
+}
+```
+
+## Returning iterators
+
+```rust
+fn song_names() -> impl Iterator<Item = &'static str> {
+    vec!["crash", "wow", "my heart will go on"].into_iter()
+}
+fn short_song_names() -> impl Iterator<Item = &'static str> {
+    song_names().filter(|name| name.len() < 5)
+}
+fn main() {
+    for name in short_song_names() {
+        println!("Listen to {name}");
+    }
+}
+```
+
+- `impl Iterator<Item = &'static str>` is a return type that is a type of iterator.
+- This allows the function not to expose its implementation details.
+
+## Conditionally returning iterator using trait objects
+
+```rust
+fn song_names() -> impl Iterator<Item = &'static str> {
+    vec!["crash", "wow", "my heart will go on"].into_iter()
+}
+fn good_song_names(short: bool) -> Box<dyn Iterator<Item = &'static str>> {
+    if short {
+        Box::new(song_names().filter(|name| name.len() < 5))
+    } else {
+        Box::new(song_names().filter(|name| name.len() > 5))
+    }
+}
+fn main() {
+    for name in good_song_names(true) {
+        println!("Listen to {name}");
+    }
+}
+```
+
+Use `Box<dyn Iterator<Item = &'static str>>` and `Box::new(...)` when returning iterator conditionally
+
+## Implementing an iterator
+
+### Trait definition
+
+```rust
+pub trait Iterator {
+    type Item;
+
+    fn next(&mut self) -> Option<Self::Item>;
+}
+```
+
+### Trait implementation
+
+```rust
+impl Iterator for MyType {
+    type Item = TheTypeOfEachElement;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        None
+    }
+}
+```
+
+## Ownership of iterators is often transferred
+
+```rust
+fn main() {
+    let input = "12 Bananas";
+    let letters = input.chars();
+    for l in letters {
+        if l == ' ' {
+            break;
+        }
+    }
+    println!("{}", letters.as_str());
+    // this will fail to compile since `letters` is
+    // used in the for loop
+}
+```
+
+```rust
+trait Iterator {
+    fn by_ref(&mut self) -> &mut Self
+}
+
+fn main() {
+    let input = "12 Bananas";
+    let mut letters = input.chars();
+    for l in letters.by_ref() {
+        if l == ' ' {
+            break;
+        }
+    }
+    println!("{}", letters.as_str());
+}
+
+// OR
+
+fn main() {
+    let input = "12 Bananas";
+    let mut letters = input.chars();
+    for l in &mut letters {
+        if l == ' ' {
+            break;
+        }
+    }
+    println!("{}", letters.as_str());
+}
+```
+
+## Iterators that reference themselves
+
+```rust
+trait LendingIterator {
+  type Item<'a>
+  where
+    Self: 'a;
+
+  fn next(&mut self) -> Option<Self::Item<'_>>;
+}
+
+impl LendingIterator for StrangeIter {
+  type Item<'a> = &'a i32;
+
+  fn next(&mut self) -> Option<Slef::Item<'_>> {
+    Some(&self.data[self.index])
+  }
+}
+```

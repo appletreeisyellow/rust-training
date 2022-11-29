@@ -1,3 +1,5 @@
+use std::io;
+
 fn print_values() {
     // Printing Values
     println!("Hello, {}", "alice");
@@ -57,6 +59,18 @@ fn exercise_filter_sum() {
     println!("sum {sum}");
 }
 
+fn fizzbuzz(n: i32) -> String {
+    if n % 3 == 0 && n % 5 == 0 {
+        "FizzBuzz".to_string()
+    } else if n % 3 == 0 {
+        "Fizz".to_string()
+    } else if n % 5 == 0 {
+        "Buzz".to_string()
+    } else {
+        n.to_string()
+    }
+}
+
 #[derive(Debug)] // This will allow you to print a value with {:?}
 struct Fahrenheit {
     value: f32,
@@ -81,17 +95,21 @@ impl Celsius {
     }
 }
 
-fn fizzbuzz(n: i32) -> String {
-    if n % 3 == 0 && n % 5 == 0 {
-        "FizzBuzz".to_string()
-    } else if n % 3 == 0 {
-        "Fizz".to_string()
-    } else if n % 5 == 0 {
-        "Buzz".to_string()
-    } else {
-        n.to_string()
-    }
-}
+// #[derive(Debug)]
+// enum Temp {
+//     Celsius(f32),
+//     Fahrenheit(f32),
+// }
+
+// impl Temp {
+//     fn convert(self) -> Temp {
+//         use Temp::*;
+//         match self {
+//             Celsius(n) => Fahrenheit(n * 1.8 + 32.0),
+//             Fahrenheit(n) => Celsius((n - 32.0) / 1.8),
+//         }
+//     }
+// }
 
 fn main() {
     print_values();
@@ -120,4 +138,11 @@ fn main() {
     for i in 1..=100 {
         println!("{}", fizzbuzz(i));
     }
+
+    // reading from io
+    let mut input = String::new();
+    io::stdin()
+        .read_line(&mut input)
+        .expect("Couldn't read from stdin");
+    println!("Read: {input:?}");
 }

@@ -137,3 +137,57 @@ fn main() {
     println!("Read: {input:?}");
 }
 ```
+
+Suggest to add `trim` for the input value
+
+## Reading from files
+
+```rust
+use std::fs;
+
+fn main() {
+    let data = fs::read_to_string("/path/to/file")
+        .expect("Couldn't read the file");
+    println!("Read: {data:?}");
+}
+```
+
+If the file is large, there are lower-level tools you can use
+
+## Writing to files
+
+```rust
+use std::fs;
+
+fn main() {
+    fs::write("/path/to/file", "This is now in a file")
+        .expect("Unable to write to the file");
+}
+```
+
+## Parsing strings
+
+### With a type on the variable
+
+```rust
+ let a: i32 = "42".parse().expect("Not an integer");
+```
+
+### With a type on the function call
+
+```rust
+let a = "42".parse::<i32>().expect("Not an integer");
+```
+
+## Import path
+
+```rust
+// Child, cd ./
+use module_name::thing;
+
+// Parent, cd ..
+use super::thing;
+
+// Crate root, cd ~
+use crate::thing;
+```

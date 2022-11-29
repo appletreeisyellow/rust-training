@@ -231,3 +231,40 @@ enum Result<T, E> {
 
 - Return value of a function
 - Annotated such that they must be used
+
+# Iterators
+
+## The Iterator trait
+
+```rust
+trait Iterator {
+    type Item;
+    fn next(&mut self) -> Option<Self::Item>;
+}
+```
+
+## IntoIterator
+
+```rust
+pub trait IntoIterator {
+    type Item;
+    type IntoIter: Iterator<Item = Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter;
+}
+```
+
+## for loops use IntoIterator
+
+```rust
+for v in vec![1, 2, 3] {
+    // ...
+}
+```
+
+```rust
+let mut i = vec![1, 2, 3].into_iter();
+while let Some(v) = i.next() {
+  // ...
+}
+```

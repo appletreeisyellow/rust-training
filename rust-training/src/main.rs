@@ -151,6 +151,21 @@ impl Iterator for PowersOfTwo {
     }
 }
 
+fn add_them_up<I>(iter: I) -> i32
+where
+    I: Iterator<Item = i32>,
+{
+    iter.sum()
+}
+
+fn stringify<I>(iter: I) -> String
+where
+    I: Iterator,
+    I::Item: ToString,
+{
+    iter.map(|x| x.to_string()).collect()
+}
+
 fn main() {
     print_values();
 
@@ -202,5 +217,14 @@ fn main() {
             PowersOfTwo::new().take(10).collect::<Vec<_>>(),
             vec![1, 2, 4, 8, 16, 32, 64, 128, 256, 512]
         );
+    }
+
+    {
+        assert_eq!(45, add_them_up(0..10));
+
+        let string_slices = ["hello", " ", "world"];
+        assert_eq!("hello world", stringify(string_slices.into_iter()));
+        let strings = ["hello", " ", "world"].map(String::from);
+        assert_eq!("hello world", stringify(strings.into_iter()));
     }
 }

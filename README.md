@@ -506,3 +506,74 @@ impl LendingIterator for StrangeIter {
   }
 }
 ```
+
+# Advanced Types and Traits
+
+## Traits are Rust's primary interesting form of abstraction
+
+- Functions provide abstraction, but are well-known
+- Macros are a different kind of abstraction, but less common
+
+## Common traits
+
+- Copy / Clone
+- Debug / Display
+- Iterator / IntoIterator
+- Into / From / TryInto / TryFrom
+- Fn / FnMut / FnOnce
+- Add / Sub / Mul / Div / etc.
+- Read / Write
+
+## Bsic structure of a trait
+
+```rust
+trait Price {
+    fn price(&self) -> i32;
+}
+
+struct Apple;
+
+impl Price for Apple {
+    fn price(&self) -> i32 {
+        1
+    }
+}
+
+fn main() {
+    let a = Apple;
+    println!("{}", a.price());
+}
+```
+
+## Basic structure of generic functions
+
+```rust
+fn my_generic<T>(value: T) -> T {
+    value
+}
+```
+
+## Trait bounds
+
+### Inline
+
+```rust
+use std::fmt::Display;
+fn my_generic<T: Display>(value: T) {
+    println!("{value}");
+}
+```
+
+### Where clause
+
+```rust
+use std::fmt::Display;
+fn my_generic<T>(value: T)
+where
+    T: Display,
+{
+    println!("{value}");
+}
+```
+
+Suggest to use the where clause than the inline format

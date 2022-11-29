@@ -191,3 +191,43 @@ use super::thing;
 // Crate root, cd ~
 use crate::thing;
 ```
+
+# Option and Result
+
+## Option
+
+```rust
+enum Option<T> {
+    Some(T),
+    None,
+}
+```
+
+## Result
+
+```rust
+enum Result<T, E> {
+    Ok(T),
+    Err(E),
+}
+```
+
+### Why don't we use Result with a dummy error value?
+
+#### Semantics
+
+- `Options` is the presence of data
+- `Result` is only the outcome of an action
+
+### Options vs Result
+
+**Option**
+
+- Field or function argument
+- Retrieving values from collections
+- "Null" pointers
+
+**Result**
+
+- Return value of a function
+- Annotated such that they must be used

@@ -1,5 +1,3 @@
-use std::io;
-
 fn print_values() {
     // Printing Values
     println!("Hello, {}", "alice");
@@ -111,6 +109,20 @@ impl Celsius {
 //     }
 // }
 
+fn valid(n: i32, max: i32) -> Result<i32, ()> {
+    if n <= max {
+        Ok(n)
+    } else {
+        Err(())
+    }
+}
+
+fn add(n1: i32, n2: i32) -> Result<i32, ()> {
+    let n1 = valid(n1, 10)?;
+    let n2 = valid(n2, 10)?;
+    valid(n1 + n2, 15)
+}
+
 fn main() {
     print_values();
 
@@ -139,10 +151,9 @@ fn main() {
         println!("{}", fizzbuzz(i));
     }
 
-    // reading from io
-    let mut input = String::new();
-    io::stdin()
-        .read_line(&mut input)
-        .expect("Couldn't read from stdin");
-    println!("Read: {input:?}");
+    {
+        println!("adding {} and {} -> {:?}", 10, 2, add(10, 2));
+        println!("adding {} and {} -> {:?}", 11, 2, add(11, 2));
+        println!("adding {} and {} -> {:?}", 10, 6, add(10, 6));
+    }
 }

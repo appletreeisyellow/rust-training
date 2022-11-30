@@ -1,3 +1,8 @@
+use std::{
+    sync::{mpsc, Arc},
+    thread,
+};
+
 fn print_values() {
     // Printing Values
     println!("Hello, {}", "alice");
@@ -193,6 +198,38 @@ fn run_calculations(mut a: i32, b: &[&dyn Calculation]) -> i32 {
     a
 }
 
+fn adder(values: Vec<i32>) -> i32 {
+    let (tx, rx) = mpsc::channel();
+    let values = Arc::new(values);
+    let thread_len = 5;
+    let size = values.len() / thread_len;
+
+    let tls: Vec<_> = (0..thread_len)
+        .map(|i| {
+            let tx = tx.clone();
+            let values = values.clone();
+
+            thread::spawn(move || {
+                let start = i * size;
+                let end = start + size;
+                for chunk in values[start..end].chunks(10) {
+                    let local_sum = chunk.iter().sum::<i32>();
+                    tx.send(local_sum).expect("unable to send value");
+                }
+            })
+        })
+        .collect();
+    drop(tx);
+
+    let total_sum = rx.into_iter().sum();
+
+    for t in tls {
+        t.join().expect("sending thread panicked")
+    }
+
+    total_sum
+}
+
 fn main() {
     print_values();
 
@@ -256,4 +293,9 @@ fn main() {
     }
 
     assert_eq!(run_calculations(0, &[&AddFortyTwo, &DivideBy(10)]), 4);
+
+    {
+        let nums: Vec<_> = (0..40_320).collect();
+        assert_eq!(812_831_040, adder(nums));
+    }
 }

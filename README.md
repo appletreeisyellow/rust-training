@@ -831,3 +831,95 @@ fn main() {
 ## Sharing values while the thread is running
 
 > Do not communicate by sharing memory; instead, share memory by communicating.
+
+Channels
+
+## What are channels good for?
+
+- Communicating between concurrent workers
+  - Different types can be sent through a channel
+- Avoiding lower level primitives
+  - mutex
+  - condition variable
+
+## Using channels
+
+```rust
+use std::{sync::mpsc, thread};
+fn main() {
+    let (tx, rx) = mpsc::channel();
+    let t1 = thread::spawn(move || {
+        for i in 0..10 {
+            tx.send(i).expect("Unable to send to thread 2");
+        }
+    });
+    let t2 = thread::spawn(move || {
+        for j in rx {
+            println!("{j}");
+        }
+    });
+    t1.join().expect("Thread 1 panicked");
+    t2.join().expect("Thread 2 panicked");
+}
+```
+
+the for loop will loop forever until the channel get an error or the thread finishes
+
+## Multi Producer, Single Consumer
+
+```rust
+use std::{sync::mpsc, thread};
+fn main() {
+    let (tx, rx) = mpsc::channel();
+    let t1s: Vec<_> = (0..2)
+        .map(|_| {
+            let tx = tx.clone();
+            thread::spawn(move || {
+                for i in 0..10 {
+                    tx.send(i).expect("Unable to send to thread 2");
+                }
+            })
+        })
+        .collect();
+    drop(tx);
+    let t2 = thread::spawn(move || {
+        for j in rx {
+            println!("{j}");
+        }
+    });
+    for t in t1s {
+        t.join().expect("Sending thread panicked")
+    }
+    t2.join().expect("Thread 2 panicked");
+}
+```
+
+## Avoiding locks with channels
+
+```rust
+use std::{sync::mpsc, thread};
+fn main() {
+    let (tx, rx) = mpsc::channel();
+    let t1s: Vec<_> = (0..10)
+        .map(|i| {
+            let tx = tx.clone();
+            thread::spawn(move || {
+                tx.send(i).expect("Unable to send value to the appender");
+            })
+        })
+        .collect();
+    drop(tx);
+    let appender = thread::spawn(move || {
+        let mut scores = Vec::new();
+        for score in rx {
+            scores.push(score);
+        }
+        scores
+    });
+    for t in t1s {
+        t.join().expect("Sending thread panicked")
+    }
+    let scores = appender.join().expect("The thread panicked");
+    println!("{scores:?}");
+}
+```

@@ -1,3 +1,4 @@
+use rayon::prelude::*;
 use std::{
     sync::{mpsc, Arc},
     thread,
@@ -230,6 +231,28 @@ fn adder(values: Vec<i32>) -> i32 {
     total_sum
 }
 
+fn adder_scoped(nums: &[i32]) -> i32 {
+    let threads = 5;
+    let size = nums.len() / threads;
+
+    let sum = thread::scope(|scope| {
+        let tls: Vec<_> = nums
+            .chunks(size)
+            .map(|chunk| scope.spawn(|| chunk.iter().sum::<i32>()))
+            .collect(); // make sure all the threads are started
+
+        tls.into_iter()
+            .map(|t| t.join().expect("thread panicked"))
+            .sum()
+    });
+
+    sum
+}
+
+fn adder_rayon(nums: &[i32]) -> i32 {
+    nums.par_iter().sum()
+}
+
 fn main() {
     print_values();
 
@@ -297,5 +320,15 @@ fn main() {
     {
         let nums: Vec<_> = (0..40_320).collect();
         assert_eq!(812_831_040, adder(nums));
+    }
+
+    {
+        let nums: Vec<_> = (0..10_000).collect();
+        assert_eq!(49_995_000, adder_scoped(&nums));
+    }
+
+    {
+        let nums: Vec<_> = (0..10_000).collect();
+        assert_eq!(49_995_000, adder_rayon(&nums));
     }
 }

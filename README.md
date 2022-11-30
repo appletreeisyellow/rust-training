@@ -923,3 +923,28 @@ fn main() {
     println!("{scores:?}");
 }
 ```
+
+## The `'static` bound
+
+Lifetime bounds
+
+- any references in the type must be valid that long
+- `'static` means "lives the entire length of the program"
+- If no references, meets any bound
+
+## Scoped threads
+
+```rust
+use std::thread;
+fn main() {
+    let score = 42;
+    thread::scope(|scope| {
+        scope.spawn(|| {
+            println!("The score is: {score}");
+        });
+    });
+}
+```
+
+- You will be garanteed that the child scope will exit before the parent scope.
+- All the scoped thread will join on their own

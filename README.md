@@ -672,3 +672,114 @@ fn sigma<T>(x: T) {}
 ```rust
 fn omega<const N: usize>() {}
 ```
+
+Example
+
+```rust
+fn many_zeroes<const N: usize>() -> [i32; N] {
+    [0; N]
+}
+
+fn main() {
+    let [a, b] = many_zeroes();
+    let [c] = many_zeroes();
+    let d = many_zeroes::<2>();
+    dbg!(a, b, c, d);
+}
+```
+
+## Lifetimes and traits
+
+### Lifetimes elided
+
+```rust
+impl Gradebook {
+  fn scores(&self) -> impl Iterator<Item = u8> {
+    self.scores.iter().copied()
+  }
+}
+```
+
+### Lifetimes explicit
+
+```rust
+impl Gradebook {
+  fn scores<'a>(&'a self) -> impl Iterator<Item = u8> + 'static {
+    self.scores.iter().copied()
+  }
+}
+```
+
+### Actual types
+
+```rust
+impl Gradebook {
+    fn scores<'a>(&'a self) -> std::iter::Copied<std::slice::Iter<'a, u8>> {
+        self.scores.iter().copied()
+    }
+}
+```
+
+## Indicating lifetimes
+
+### Explicit lifetime
+
+```rust
+impl Gradebook {
+    fn scores<'a>(&'a self) -> impl Iterator<Item = u8> + 'a {
+        self.scores.iter().copied()
+    }
+}
+```
+
+### Anonymous lifetime
+
+```rust
+impl Gradebook {
+    fn scores(&self) -> impl Iterator<Item = u8> + '_ {
+        self.scores.iter().copied()
+    }
+}
+```
+
+## Higher-ranked trait bounds
+
+This is important but infrequently useful
+
+```rust
+trait Holder {
+    type Value;
+    fn get(&self) -> &Self::Value;
+}
+trait Identify {
+    fn identify(&self);
+}
+struct Container(Example);
+impl Holder for Container {
+    type Value = Example;
+    fn get(&self) -> &Self::Value {
+        &self.0
+    }
+}
+struct Example;
+impl Identify for Example {
+    fn identify(&self) {
+        println!("I am an Example")
+    }
+}
+```
+
+Combine the two trait into one
+
+```rust
+fn default_and_identify<H>(holder: H)
+where
+    H: Holder,
+    for<'a> &'a H::Value: Identify,
+{
+    let value = holder.get();
+    value.identify();
+}
+```
+
+Whenever you need to place the reference trait bound on anything you own, you need to use higher-ranked trait bounds.

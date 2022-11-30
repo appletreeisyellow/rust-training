@@ -783,3 +783,51 @@ where
 ```
 
 Whenever you need to place the reference trait bound on anything you own, you need to use higher-ranked trait bounds.
+
+# Concurrency
+
+## Interior mutability
+
+```rust
+use std::cell::Cell;
+fn main() {
+    let shared = Cell::new(42);
+    shared.set(99);
+}
+```
+
+```rust
+use std::cell::RefCell;
+fn main() {
+    let shared = RefCell::new(42);
+    *shared.borrow_mut() += 1;
+}
+```
+
+- `RefCell` is single-thread read-write lock
+- The downside of `Cell` and `RefCell` is that they are only for single-threaded reference-counting pointer
+
+## Applying shared ownership and interior mutability
+
+```rust
+use std::{sync::{Arc, Mutex}, thread};
+fn main() {
+    let scores = Arc::new(Mutex::new(vec![42]));
+    let thread_scores = scores.clone();
+    let handle = thread::spawn(move || {
+        println!("Scores A: {thread_scores:?}");
+        thread_scores.lock().expect("lock poisoned").push(1);
+        println!("Scores B: {thread_scores:?}");
+    });
+    scores.lock().expect("lock poisoned").push(2);
+    println!("Scores C: {scores:?}");
+    handle.join().expect("The thread panicked");
+}
+```
+
+- Rust can prevent memery leaking
+- Rust cannot prevent race condition
+
+## Sharing values while the thread is running
+
+> Do not communicate by sharing memory; instead, share memory by communicating.

@@ -948,3 +948,155 @@ fn main() {
 
 - You will be garanteed that the child scope will exit before the parent scope.
 - All the scoped thread will join on their own
+
+# Asynchronous Programming
+
+## Defining an asynchronous function
+
+```rust
+async fn eniac(a: i32, b: i32) -> i32 {
+    a + b
+}
+```
+
+## Calling an asynchronous function
+
+### From an asynchronous function
+
+```rust
+async fn chess_game(a: i32, b: i32) {
+    let a_move = ask_server_where_to_move().await;
+}
+```
+
+### From an asynchronous block
+
+```rust
+fn chess_game(a: i32, b: i32) {
+    let sometime = async {
+        let a_move = ask_server_where_to_move().await;
+    };
+}
+```
+
+- You can only use `await` inside an async func or block
+
+## Asynchronous functions and error handling
+
+```rust
+async fn download_web_page(url: &str) -> Result<String, Error> {
+    todo!()
+}
+
+async fn get_available_products() -> Result<usize, Error> {
+    let html = download_web_page("http://ferris-merch.example.com").await?;
+    Ok(html.len())
+}
+```
+
+## `impl Future`
+
+```rust
+async fn sugared() -> i32 {
+    42
+}
+```
+
+same as
+
+```rust
+fn desugared() -> impl std::future::Future<Output = i32> {
+    async { 42 }
+}
+```
+
+```rust
+fn a_tale_of_two_times() -> impl std::future::Future<Output = i32>  {
+    println!("Run immediately on function invocation");
+    async {
+        println!("Run when polled");
+    }
+}
+```
+
+`Future` has been out there twice as old as `async await` code
+
+## The `Future` trait
+
+```rust
+trait Future {
+    type Output;
+
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output>;
+}
+
+enum Poll<T> {
+    Ready(T),
+    Pending,
+}
+```
+
+Compare / contrast to:
+
+```rust
+trait Iterator {
+    type Item;
+
+    fn next(&mut self) -> Option<Self::Item>;
+    // 60+ methods
+}
+
+enum Option<T> {
+    None,
+    Some(T),
+}
+```
+
+## Streams
+
+```rust
+trait Stream {
+    type Item;
+    fn poll_next(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>
+    ) -> Poll<Option<Self::Item>>;
+}
+```
+
+```rust
+trait StreamExt: Stream {
+    // 40 methods
+}
+```
+
+methods like
+
+- `map`, `fold`, `enumerate`
+- `buffer`, `buffer_unordered`, `for_each_concurrent`
+
+## Common combinators
+
+- `join` (similar to `Promise.all()` in JS)
+- `select`
+- `now_or_never`
+- `buffer_unordered`
+
+## Concurrency vs. parallelism
+
+```rust
+use futures::future;
+use std::time::Instant;
+#[tokio::main]
+async fn main() {
+    let start = Instant::now();
+    let a = tokio::task::spawn(async { process_for_100ms() });
+    let b = tokio::task::spawn(async { process_for_100ms() });
+    let (_a, _b) = future::join(a, b).await;
+    let duration = start.elapsed();
+    dbg!(duration);
+}
+```
+
+- `tokio::task::spawn` -> run in parallel
+- `future::join(a, b).await` -> run in concurrency

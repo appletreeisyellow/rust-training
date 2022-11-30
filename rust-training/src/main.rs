@@ -166,6 +166,33 @@ where
     iter.map(|x| x.to_string()).collect()
 }
 
+trait Calculation {
+    fn eval(&self, v: i32) -> i32;
+}
+
+struct AddFortyTwo;
+
+impl Calculation for AddFortyTwo {
+    fn eval(&self, v: i32) -> i32 {
+        v + 42
+    }
+}
+
+struct DivideBy(i32);
+
+impl Calculation for DivideBy {
+    fn eval(&self, v: i32) -> i32 {
+        v / self.0
+    }
+}
+
+fn run_calculations(mut a: i32, b: &[&dyn Calculation]) -> i32 {
+    for cal in b {
+        a = cal.eval(a);
+    }
+    a
+}
+
 fn main() {
     print_values();
 
@@ -227,4 +254,6 @@ fn main() {
         let strings = ["hello", " ", "world"].map(String::from);
         assert_eq!("hello world", stringify(strings.into_iter()));
     }
+
+    assert_eq!(run_calculations(0, &[&AddFortyTwo, &DivideBy(10)]), 4);
 }

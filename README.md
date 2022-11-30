@@ -577,3 +577,98 @@ where
 ```
 
 Suggest to use the where clause than the inline format
+
+## Generic associated types
+
+```rust
+trait LendingIterator {
+  type Item<'a>
+  where
+    Self: 'a;
+
+    fn next<'a>(&'a mut self) -> Option<Self::Item<'a>>;
+}
+```
+
+```rust
+struct BufferedData {
+  data: [u8; 4],
+  idx: usize,
+}
+
+impl LendingIterator for BufferedData {
+  type Item<'a> = &'a mut u8;
+
+  for next(&mut self) -> Option<Self::Item<'_>> {
+    let v = self.data.get_mut(self.idx)?;
+    self.idx += 1;
+    Some(v)
+  }
+}
+
+fn main() {
+  let mut buf = BufferedData {
+    data: [1, 2, 3, 4],
+    idx: 0,
+  };
+
+  while let Some(v) = buf.next() {
+    println!("{v}");
+  }
+}
+```
+
+Key things to remember:
+
+- Compare to the normal trait, this trait can only have one item out at a time. As soon as you have on item, you cannot use it anymore
+
+## `impl Trait` as an argument
+
+```rust
+fn lots_of_noise(animal: impl Animal) {
+    for _ in 0..10 {
+        animal.speak()
+    }
+}
+```
+
+```rust
+fn lots_of_noise<A: Animal>(animal: A) {
+    for _ in 0..10 {
+        animal.speak()
+    }
+}
+```
+
+```rust
+fn lots_of_noise<A>(animal: A)
+where
+    A: Animal,
+{
+    for _ in 0..10 {
+        animal.speak()
+    }
+}
+```
+
+use `impl Animal` if you can
+
+## Rust has three kinds of generics
+
+**Lifetimes**
+
+```rust
+fn alpha<'a>(x: &'a u8) {}
+```
+
+**Types**
+
+```rust
+fn sigma<T>(x: T) {}
+```
+
+**Constants**
+
+```rust
+fn omega<const N: usize>() {}
+```

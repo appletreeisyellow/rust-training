@@ -20,6 +20,9 @@ Online rust playground https://play.rust-lang.org/
 - Package manager
 - Build tool
 - Create a new cargo
+  ```
+  cargo new --bin name-of-crate
+  ```
 
 ```
 cargo new --bin <name=of-cargo>
